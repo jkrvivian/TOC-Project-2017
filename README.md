@@ -1,8 +1,11 @@
 # TOC Project 2017
-
-Template Code for TOC Project 2017
-
+## SuperHomeBot
 A telegram bot based on a finite state machine
+
+SuperHome is
+* a bot can search all animations in specify year and season
+* a bot can list detail information and posters for specify animation
+* a bot can list top 3 animation news
 
 ## Setup
 
@@ -44,18 +47,5 @@ python3 app.py
 ## Finite State Machine
 ![fsm](./img/show-fsm.png)
 
-## Usage
-The initial state is set to `user`.
-
-Every time `user` state is triggered to `advance` to another state, it will `go_back` to `user` state after the bot replies corresponding message.
-
-* user
-	* Input: "go to state1"
-		* Reply: "I'm entering state1"
-
-	* Input: "go to state2"
-		* Reply: "I'm entering state2"
-
-
 ## Author
-[Lee-W](https://github.com/Lee-W)
+[jkrvivian](https://github.com/jkrvivian)
