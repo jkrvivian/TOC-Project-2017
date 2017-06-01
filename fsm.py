@@ -22,6 +22,7 @@ class TocMachine(GraphMachine):
     original_modify = 'http://justlaughtw.blogspot.com/search/label/%E5%8E%9F%E5%89%B5%E5%8B%95%E7%95%AB'
     user_name = ('')
     animat_list = []
+    img = []
 
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(
@@ -30,7 +31,6 @@ class TocMachine(GraphMachine):
         )
 
     def get_web_page(self, url):
-        print(url)
         resp = requests.get(
                 url = url
         )
@@ -99,27 +99,33 @@ class TocMachine(GraphMachine):
             
         # parse webpage
         soup = BeautifulSoup(page, 'html.parser')
-        data = soup.find_all('span', style = re.compile('font-size: 15px;( line-height: 22.5px;)?'))
-        img = soup.find_all('a',  style = re.compile('clear: left; float: left; margin-bottom: 1em; margin-right: 1em;'))
+        data = soup.find_all('span', style = re.compile('font-size: 15px;( line-height: 22.5px;)?$'))
+        self.img = soup.find_all('a',  style = re.compile('clear: left; float: left; margin-bottom: 1em; margin-right: 1em;'))
 
         # store each animation to lists
         del self.animat_list[:]
         count = -1
+        if text == '2015_4':
+            self.animat_list.append([])
+            self.animat_list[0].append("網球少女")
+            update.message.reply_text(self.animat_list[0][0])
+            count = 0
+
         for t in data:
-            if t.text:
+            if t.text.isspace():
+                continue
+            else:
                 name = re.search('.*《(.*)》.*', t.text)
                 rest = re.search('.*》(.*)', t.text)
                 if name:
                     count = count + 1
                     self.animat_list.append([])
                     self.animat_list[count].append(name.group(1))
-                    self.animat_list[count].append(img[count].get('href'))
                     self.animat_list[count].append(rest.group(1))
-                    #print(name.group(1))
+                    print(name.group(1))
                     update.message.reply_text(name.group(1))
                 else:
                     self.animat_list[count].append(t.text)
-        print(self.animat_list[0])
         update.message.reply_text("有想要再知道哪一部的詳細介紹嗎？\n(1) 我想了解更多！\n(2) 返回\n")
 
     def is_going_to_go_deeper_animainfo1(self, update):
@@ -133,17 +139,20 @@ class TocMachine(GraphMachine):
 
     def on_enter_go_deeper_animainfo2(self, update):
         retstr = ('')
+        i = 0
         for i in range(len(self.animat_list)):
             if update.message.text in self.animat_list[i]:
                 for j in range(len(self.animat_list[i])):
-                    print(self.animat_list[i][j])
                     if j == 0:
-                        retstr = "[" + self.animat_list[i][j] + "]\n\n"
-                    elif j == 2:
-                        retstr += "劇情:\n" + self.animat_list[i][j] + "\n"
+                        retstr = "【" + self.animat_list[i][j] + "】\n\n"
+                    elif j == 1:
+                        retstr += "劇情: " + self.animat_list[i][j] + "\n"
                     else:
                         retstr += self.animat_list[i][j] + "\n"
+                print(self.animat_list[i][0])
+                break
         update.message.reply_text(retstr)
+        update.message.reply_photo(self.img[i].get('href'))
         update.message.reply_text("可以再繼續查你有興趣的番喔！\n想返回就輸入 '2'\n")
 
     def is_going_to_go_deeper_animback(self, update):
@@ -242,10 +251,10 @@ class TocMachine(GraphMachine):
         # parse webpage
         soup = BeautifulSoup(page, 'html.parser')
         p = soup.find_all('a',  class_ = 'bcover')
-        img = soup.find_all('img')
+        self.img = soup.find_all('img')
         i = 0
         while i < 10:
-            update.message.reply_text(p[i].get('title') + '\n' + img[i].get('src') + '\n漫畫連結：' + p[i].get('href'))
+            update.message.reply_text(p[i].get('title') + '\n' + self.img[i].get('src') + '\n漫畫連結：' + p[i].get('href'))
             i = i + 1
         update.message.reply_text("返回，請輸入 '3'")
 
@@ -253,7 +262,7 @@ class TocMachine(GraphMachine):
         return update.message.text == '1'
     
     def on_enter_teach_boyslove(self, update):
-        update.message.reply_text("「腐女子」一詞源自於日語，是由同音的「婦女子（ふじょし）」轉化而來，為喜愛BL（boys love）的女性自嘲的用語。腐女子的「腐」字在日文有無藥可救的意思，而腐女子是專門指稱對於男男愛情（BL系）作品情有獨鍾的女性，通常是喜歡此類作品的女性之間彼此自嘲的講法；非此族群以「腐女子」稱呼這些女性時，則是帶有貶低、蔑視意味的詞彙。在日本一些地方，直接稱呼對方為「腐女」是不禮貌的事情。\n\n【同人女】本來單純用來指愛好創作同人作品的女性。由於腐女喜歡由BL的觀點詮釋原創作品，所以會有不少腐女親自繪畫和書寫相關同人作品。但同人女不一定是腐女，腐女亦不一定會進行同人創作。所以同人女與腐女的定義仍然應該清楚的區別開來。\n")
+        update.message.reply_text("【腐女子】\n腐女子」一詞源自於日語，是由同音的「婦女子（ふじょし）」轉化而來，為喜愛BL（boys love）的女性自嘲的用語。腐女子的「腐」字在日文有無藥可救的意思，而腐女子是專門指稱對於男男愛情（BL系）作品情有獨鍾的女性，通常是喜歡此類作品的女性之間彼此自嘲的講法；非此族群以「腐女子」稱呼這些女性時，則是帶有貶低、蔑視意味的詞彙。在日本一些地方，直接稱呼對方為「腐女」是不禮貌的事情。\n\n【同人女】本來單純用來指愛好創作同人作品的女性。由於腐女喜歡由BL的觀點詮釋原創作品，所以會有不少腐女親自繪畫和書寫相關同人作品。但同人女不一定是腐女，腐女亦不一定會進行同人創作。所以同人女與腐女的定義仍然應該清楚的區別開來。\n")
         update.message.reply_text("(1) 我想繼續！\n(2) 我心臟可能負荷不了\n")
 
     def is_going_to_stillBL(self, update):
